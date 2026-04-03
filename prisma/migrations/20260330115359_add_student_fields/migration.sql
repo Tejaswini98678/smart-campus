@@ -1,0 +1,5 @@
+-- AlterTable
+ALTER TABLE "User" ADD COLUMN "batch" TEXT;
+ALTER TABLE "User" ADD COLUMN "branch" TEXT;
+ALTER TABLE "User" ADD COLUMN "mentor" TEXT;
+ALTER TABLE "User" ADD COLUMN "rollNumber" TEXT;

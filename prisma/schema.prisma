@@ -1,0 +1,125 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = "file:./dev.db"
+}
+
+model User {
+  id          String         @id @default(cuid())
+  email       String         @unique
+  password    String
+  name        String
+  role        String
+  dept        String?
+  branch      String?
+  rollNumber  String?
+  batch       String?
+  mentor      String?
+  examBlocked Boolean        @default(false)
+  isActive    Boolean        @default(true)
+  createdAt   DateTime       @default(now())
+  updatedAt   DateTime       @updatedAt
+  attendance  Attendance[]
+  courses     Course[]       @relation("FacultyCourses")
+  grades      Grade[]
+  schedule    ScheduleItem[] @relation("FacultySchedule")
+  leaves      LeaveRequest[] @relation("UserLeaves")
+}
+
+model Attendance {
+  id        String   @id @default(cuid())
+  studentId String
+  date      DateTime @default(now())
+  status    String
+  subject   String
+  student   User     @relation(fields: [studentId], references: [id])
+}
+
+model Grade {
+  id        String   @id @default(cuid())
+  studentId String
+  subject   String
+  score     Int
+  date      DateTime @default(now())
+  student   User     @relation(fields: [studentId], references: [id])
+}
+
+model ScheduleItem {
+  id        String @id @default(cuid())
+  facultyId String
+  subject   String
+  time      String
+  room      String
+  day       String
+  period    Int?
+  faculty   User   @relation("FacultySchedule", fields: [facultyId], references: [id])
+}
+
+model Course {
+  id        String   @id @default(cuid())
+  code      String   @unique
+  title     String
+  credits   Int      @default(3)
+  semester  Int      @default(1)
+  facultyId String?
+  createdAt DateTime @default(now())
+  faculty   User?    @relation("FacultyCourses", fields: [facultyId], references: [id])
+}
+
+model Announcement {
+  id        String   @id @default(cuid())
+  title     String
+  content   String
+  audience  String   @default("ALL")
+  authorId  String
+  createdAt DateTime @default(now())
+}
+
+model ChatRoom {
+  id             String    @id @default(cuid())
+  name           String
+  type           String    @default("group")
+  participantIds String    @default("")
+  createdAt      DateTime  @default(now())
+  messages       Message[]
+}
+
+model Message {
+  id         String   @id @default(cuid())
+  senderId   String
+  senderName String
+  senderRole String
+  content    String   @default("")
+  roomId     String
+  fileData   String?
+  fileName   String?
+  fileType   String?
+  isPriority Boolean  @default(false)
+  createdAt  DateTime @default(now())
+  room       ChatRoom @relation(fields: [roomId], references: [id], onDelete: Cascade)
+}
+
+model Exam {
+  id        String   @id @default(cuid())
+  subject   String
+  date      String
+  time      String
+  room      String
+  createdAt DateTime @default(now())
+}
+
+model LeaveRequest {
+  id        String   @id @default(cuid())
+  userId    String
+  type      String   // 'Medical', 'Casual', 'Emergency'
+  reason    String
+  startDate String
+  endDate   String
+  status    String   @default("PENDING") // 'PENDING', 'APPROVED', 'DENIED'
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  user      User     @relation("UserLeaves", fields: [userId], references: [id])
+}

@@ -1,0 +1,11 @@
+node_modules
+.next
+.git
+.env*
+*.log
+dev.db*
+.dockerignore
+Dockerfile
+docker-entrypoint.sh
+package-lock.json
+README.md
