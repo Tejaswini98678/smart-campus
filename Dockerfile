@@ -1,11 +1,12 @@
 # Dockerfile for Smart Campus UniPortal 4.0
 # Optimized for Next.js Standalone Mode + Prisma SQLite
+# Switched to Debian-slim for better native binary compatibility (Prisma/ONNX)
 
-FROM node:20-alpine AS base
+FROM node:20-slim AS base
 
 # 1. Install dependencies only when needed
 FROM base AS deps
-RUN apk add --no-cache libc6-compat
+RUN apt-get update && apt-get install -y openssl ca-certificates && rm -rf /var/lib/apt/lists/*
 WORKDIR /app
 
 COPY package.json package-lock.json ./
@@ -13,6 +14,7 @@ RUN npm ci
 
 # 2. Rebuild the source code only when needed
 FROM base AS builder
+RUN apt-get update && apt-get install -y openssl ca-certificates && rm -rf /var/lib/apt/lists/*
 WORKDIR /app
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
@@ -21,14 +23,19 @@ COPY . .
 RUN npx prisma generate
 
 # Build Next.js
+ENV NEXT_TELEMETRY_DISABLED 1
 RUN npm run build
 
 # 3. Production image, copy all the files and run next
 FROM base AS runner
 WORKDIR /app
 
+# Ensure OpenSSL is available in runtime
+RUN apt-get update && apt-get install -y openssl ca-certificates && rm -rf /var/lib/apt/lists/*
+
 ENV NODE_ENV production
 ENV PORT 7860
+ENV NEXT_TELEMETRY_DISABLED 1
 
 RUN addgroup --system --gid 1001 nodejs
 RUN adduser --system --uid 1001 nextjs
@@ -45,9 +52,7 @@ COPY --from=builder /app/prisma ./prisma
 COPY --chown=nextjs:nodejs docker-entrypoint.sh .
 RUN chmod +x docker-entrypoint.sh
 
-# Hugging Face Spaces run as a user with UID 1000, 
-# but we follow Next.js's standard non-root practice.
-# We ensure the SQLite database directory is writable.
+# Ensure the SQLite database directory is writable.
 RUN chown -R nextjs:nodejs /app/prisma
 
 USER nextjs
