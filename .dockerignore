@@ -4,8 +4,4 @@ node_modules
 .env*
 *.log
 dev.db*
-.dockerignore
-Dockerfile
-docker-entrypoint.sh
-package-lock.json
-README.md
+prisma/dev.db*
