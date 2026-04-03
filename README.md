@@ -2,7 +2,7 @@
 title: Smart Campus UniPortal 4.0
 emoji: 🎓
 colorFrom: indigo
-colorTo: violet
+colorTo: purple
 sdk: docker
 pinned: false
 app_port: 7860
