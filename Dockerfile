@@ -40,7 +40,7 @@ ENV NEXT_TELEMETRY_DISABLED 1
 ENV HOME=/app
 
 RUN addgroup --system --gid 1001 nodejs
-RUN adduser --system --uid 1001 --gid 1001 --create-home nextjs
+RUN adduser --system --uid 1001 --gid 1001 --home /app nextjs
 
 # Set up the public files and static assets
 COPY --from=builder /app/public ./public
