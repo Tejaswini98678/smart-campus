@@ -10,7 +10,7 @@ RUN apt-get update && apt-get install -y openssl ca-certificates && rm -rf /var/
 WORKDIR /app
 
 COPY package.json package-lock.json ./
-RUN npm ci
+RUN npm ci --omit=optional
 
 # 2. Rebuild the source code only when needed
 FROM base AS builder
