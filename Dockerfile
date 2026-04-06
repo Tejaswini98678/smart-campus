@@ -10,7 +10,10 @@ RUN apt-get update && apt-get install -y openssl ca-certificates && rm -rf /var/
 WORKDIR /app
 
 COPY package.json package-lock.json ./
-RUN npm ci && rm -rf node_modules/onnxruntime-node
+RUN npm ci && \
+    rm -rf node_modules/onnxruntime-node/* && \
+    echo 'module.exports = { env: { wasm: {} } };' > node_modules/onnxruntime-node/index.js && \
+    echo '{"name":"onnxruntime-node","version":"1.14.0","main":"index.js"}' > node_modules/onnxruntime-node/package.json
 
 # 2. Rebuild the source code only when needed
 FROM base AS builder
