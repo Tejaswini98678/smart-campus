@@ -1,4 +1,11 @@
-import { pipeline } from '@xenova/transformers';
+import { pipeline, env } from '@xenova/transformers';
+
+// Configure transformers to use WASM backend for better compatibility in production
+env.backends.onnx.wasm.numThreads = 1;
+env.backends.onnx.wasm.wasmPaths = 'https://cdn.jsdelivr.net/npm/onnxruntime-web@1.14.0/dist/';
+// Try to force WASM if native fails or avoid native entirely
+env.allowLocalModels = true;
+env.useBrowserCache = false;
 
 let extractor: any = null;
 

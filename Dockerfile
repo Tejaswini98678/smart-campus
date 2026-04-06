@@ -30,15 +30,17 @@ RUN npm run build
 FROM base AS runner
 WORKDIR /app
 
-# Ensure OpenSSL is available in runtime
-RUN apt-get update && apt-get install -y openssl ca-certificates && rm -rf /var/lib/apt/lists/*
+# Ensure OpenSSL and libgomp1 (for ONNX) are available in runtime
+RUN apt-get update && apt-get install -y openssl ca-certificates libgomp1 && rm -rf /var/lib/apt/lists/*
 
 ENV NODE_ENV production
 ENV PORT 7860
 ENV NEXT_TELEMETRY_DISABLED 1
+# Set HOME to a writable directory to avoid npm/npx permission issues
+ENV HOME=/app
 
 RUN addgroup --system --gid 1001 nodejs
-RUN adduser --system --uid 1001 nextjs
+RUN adduser --system --uid 1001 --gid 1001 --create-home nextjs
 
 # Set up the public files and static assets
 COPY --from=builder /app/public ./public
@@ -46,14 +48,14 @@ COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
 COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
 
 # Copy Prisma schema and migrations for runtime usage
-COPY --from=builder /app/prisma ./prisma
+COPY --from=builder --chown=nextjs:nodejs /app/prisma ./prisma
 
 # Create a shell script to handle startup logic (migrations + start)
 COPY --chown=nextjs:nodejs docker-entrypoint.sh .
 RUN chmod +x docker-entrypoint.sh
 
-# Ensure the SQLite database directory is writable.
-RUN chown -R nextjs:nodejs /app/prisma
+# Ensure the app directory is writable by nextjs
+RUN chown -R nextjs:nodejs /app
 
 USER nextjs
 
