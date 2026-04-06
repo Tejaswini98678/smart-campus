@@ -12,7 +12,7 @@ echo "📂 Applying database migrations..."
 cd /app
 
 # Run migrations
-if npx prisma migrate deploy; then
+if npx prisma@5.22.0 migrate deploy; then
   echo "✅ Migrations applied successfully."
 else
   echo "⚠️ Migration failed or already applied. Continuing..."
