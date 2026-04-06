@@ -5,7 +5,11 @@ env.backends.onnx.wasm.numThreads = 1;
 env.backends.onnx.wasm.wasmPaths = 'https://cdn.jsdelivr.net/npm/onnxruntime-web@1.14.0/dist/';
 
 // CRITICAL: Explicitly disable the native node backend to prevent it from looking for libonnxruntime.so
-(env.backends.onnx as any).node.enabled = false;
+// Added safety checks for build-time initialization
+if (env.backends && env.backends.onnx) {
+    if (!(env.backends.onnx as any).node) (env.backends.onnx as any).node = {};
+    (env.backends.onnx as any).node.enabled = false;
+}
 
 // Try to force WASM if native fails or avoid native entirely
 env.allowLocalModels = true;
